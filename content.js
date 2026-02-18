@@ -140,16 +140,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true;
 });
 
-// Throttled scroll repositioning (rAF instead of full rebuild)
-let scrollRAF = null;
-window.addEventListener("scroll", () => {
+// Throttled repositioning (rAF instead of full rebuild)
+let repositionRAF = null;
+function scheduleReposition() {
   if (!active || labelPairs.length === 0) return;
-  if (scrollRAF) return;
-  scrollRAF = requestAnimationFrame(() => {
+  if (repositionRAF) return;
+  repositionRAF = requestAnimationFrame(() => {
     repositionLabels();
-    scrollRAF = null;
+    repositionRAF = null;
   });
-});
+}
+window.addEventListener("scroll", scheduleReposition);
+window.addEventListener("resize", scheduleReposition);
 
 // MutationObserver: re-apply highlights when the DOM changes
 let mutationTimer = null;
