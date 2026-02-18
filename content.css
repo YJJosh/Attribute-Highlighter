@@ -1,0 +1,41 @@
+.attr-highlight-outline {
+  outline: 3px solid #4466ff !important;
+  outline-offset: 2px !important;
+}
+
+.attr-highlight-label {
+  position: absolute;
+  background: #4466ff;
+  color: white;
+  font-size: 10px;
+  font-family: monospace;
+  padding: 1px 4px;
+  border-radius: 2px;
+  z-index: 999999;
+  white-space: nowrap;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.attr-highlight-copy-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 3px;
+  border-radius: 2px;
+  line-height: 1.4;
+  pointer-events: auto;
+}
+
+.attr-highlight-copy-btn:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+.attr-highlight-copied {
+  background: rgba(0,255,0,0.3) !important;
+}

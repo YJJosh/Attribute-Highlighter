@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      color: #e0e0e0;
+      background: #1a1a2e;
+      padding: 12px;
+    }
+    h1 {
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 8px;
+      background: #16213e;
+      border-radius: 6px;
+    }
+    .toggle-btn {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .toggle-btn.on { background: #ff4444; color: white; }
+    .toggle-btn.off { background: #333; color: #aaa; }
+    .rules { margin-bottom: 10px; }
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      padding: 6px;
+      background: #16213e;
+      border-radius: 4px;
+    }
+    .rule select, .rule input {
+      background: #0f3460;
+      border: 1px solid #333;
+      color: #e0e0e0;
+      padding: 4px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .rule input[type="text"] { width: 80px; }
+    .rule input[type="color"] {
+      width: 28px; height: 24px;
+      padding: 0; border: none; cursor: pointer;
+    }
+    .rule .delete-btn {
+      background: none; border: none; color: #ff4444;
+      cursor: pointer; font-size: 16px; padding: 0 4px;
+    }
+    .value-field { display: none; }
+    .value-field.show { display: inline-block; }
+    .add-btn {
+      width: 100%;
+      padding: 6px;
+      background: #0f3460;
+      border: 1px dashed #555;
+      color: #aaa;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .add-btn:hover { background: #16213e; color: #fff; }
+    .info {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Attribute Highlighter</h1>
+
+  <div class="toggle-row">
+    <span id="status">OFF</span>
+    <button id="toggleBtn" class="toggle-btn off">Toggle</button>
+  </div>
+
+  <div class="toggle-row">
+    <span>Copy button</span>
+    <select id="copyMode" style="background:#0f3460;border:1px solid #333;color:#e0e0e0;padding:4px 6px;border-radius:3px;font-size:12px;">
+      <option value="off">Disabled</option>
+      <option value="both">Attribute + Value</option>
+      <option value="value">Value only</option>
+    </select>
+  </div>
+
+  <div class="rules" id="rules"></div>
+  <button class="add-btn" id="addRule">+ Add Rule</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
