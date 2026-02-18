@@ -1,10 +1,16 @@
-const DEFAULT_RULES = [
-  { type: "has", attribute: "data-cy", color: "#4466ff", value: "", label: true },
-  { type: "has", attribute: "data-testid", color: "#44aaff", value: "", label: true },
-  { type: "has", attribute: "data-test", color: "#44ddff", value: "", label: true },
-];
+// DEFAULT_RULES is provided by shared.js
 
 let rules = [];
+
+function sendToTab(message, callback) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (!tabs[0]) return;
+    chrome.tabs.sendMessage(tabs[0].id, message, (response) => {
+      if (chrome.runtime.lastError) return; // content script not available
+      if (callback) callback(response);
+    });
+  });
+}
 
 function renderRules() {
   const container = document.getElementById("rules");
@@ -13,56 +19,76 @@ function renderRules() {
   rules.forEach((rule, i) => {
     const div = document.createElement("div");
     div.className = "rule";
-    div.innerHTML = `
-      <select class="type-select" data-i="${i}">
-        <option value="has" ${rule.type === "has" ? "selected" : ""}>has attr</option>
-        <option value="equals" ${rule.type === "equals" ? "selected" : ""}>attr = val</option>
-      </select>
-      <input type="text" class="attr-input" data-i="${i}" value="${rule.attribute}" placeholder="attribute">
-      <input type="text" class="value-input value-field ${rule.type === "equals" ? "show" : ""}" data-i="${i}" value="${rule.value || ""}" placeholder="value">
-      <input type="color" class="color-input" data-i="${i}" value="${rule.color}">
-      <button class="delete-btn" data-i="${i}">x</button>
-    `;
-    container.appendChild(div);
-  });
 
-  // Event listeners
-  container.querySelectorAll(".type-select").forEach((el) => {
-    el.addEventListener("change", (e) => {
-      const i = parseInt(e.target.dataset.i);
-      rules[i].type = e.target.value;
+    // Type selector
+    const typeSelect = document.createElement("select");
+    typeSelect.className = "type-select";
+    const hasOpt = document.createElement("option");
+    hasOpt.value = "has";
+    hasOpt.textContent = "has attr";
+    hasOpt.selected = rule.type === "has";
+    const eqOpt = document.createElement("option");
+    eqOpt.value = "equals";
+    eqOpt.textContent = "attr = val";
+    eqOpt.selected = rule.type === "equals";
+    typeSelect.appendChild(hasOpt);
+    typeSelect.appendChild(eqOpt);
+
+    // Attribute name input
+    const attrInput = document.createElement("input");
+    attrInput.type = "text";
+    attrInput.className = "attr-input";
+    attrInput.value = rule.attribute;
+    attrInput.placeholder = "attribute";
+
+    // Value input (visible only for "equals" type)
+    const valueInput = document.createElement("input");
+    valueInput.type = "text";
+    valueInput.className = "value-input value-field" + (rule.type === "equals" ? " show" : "");
+    valueInput.value = rule.value || "";
+    valueInput.placeholder = "value";
+
+    // Color picker
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.className = "color-input";
+    colorInput.value = rule.color;
+
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-btn";
+    deleteBtn.textContent = "x";
+
+    div.appendChild(typeSelect);
+    div.appendChild(attrInput);
+    div.appendChild(valueInput);
+    div.appendChild(colorInput);
+    div.appendChild(deleteBtn);
+    container.appendChild(div);
+
+    // Event listeners
+    typeSelect.addEventListener("change", () => {
+      rules[i].type = typeSelect.value;
       saveAndRefresh();
       renderRules();
     });
-  });
 
-  container.querySelectorAll(".attr-input").forEach((el) => {
-    el.addEventListener("change", (e) => {
-      const i = parseInt(e.target.dataset.i);
-      rules[i].attribute = e.target.value;
+    attrInput.addEventListener("change", () => {
+      rules[i].attribute = attrInput.value;
       saveAndRefresh();
     });
-  });
 
-  container.querySelectorAll(".value-input").forEach((el) => {
-    el.addEventListener("change", (e) => {
-      const i = parseInt(e.target.dataset.i);
-      rules[i].value = e.target.value;
+    valueInput.addEventListener("change", () => {
+      rules[i].value = valueInput.value;
       saveAndRefresh();
     });
-  });
 
-  container.querySelectorAll(".color-input").forEach((el) => {
-    el.addEventListener("input", (e) => {
-      const i = parseInt(e.target.dataset.i);
-      rules[i].color = e.target.value;
+    colorInput.addEventListener("input", () => {
+      rules[i].color = colorInput.value;
       saveAndRefresh();
     });
-  });
 
-  container.querySelectorAll(".delete-btn").forEach((el) => {
-    el.addEventListener("click", (e) => {
-      const i = parseInt(e.target.dataset.i);
+    deleteBtn.addEventListener("click", () => {
       rules.splice(i, 1);
       saveAndRefresh();
       renderRules();
@@ -72,22 +98,14 @@ function renderRules() {
 
 function saveAndRefresh() {
   chrome.storage.sync.set({ rules }, () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "refresh" });
-      }
-    });
+    sendToTab({ action: "refresh" });
   });
 }
 
 // Toggle button
 document.getElementById("toggleBtn").addEventListener("click", () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "toggle" }, (response) => {
-        if (response) updateToggleUI(response.active);
-      });
-    }
+  sendToTab({ action: "toggle" }, (response) => {
+    if (response) updateToggleUI(response.active);
   });
 });
 
@@ -117,26 +135,18 @@ document.getElementById("addRule").addEventListener("click", () => {
 // Copy mode selector
 document.getElementById("copyMode").addEventListener("change", (e) => {
   chrome.storage.sync.set({ copyMode: e.target.value }, () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "refresh" });
-      }
-    });
+    sendToTab({ action: "refresh" });
   });
 });
 
-// Init
+// Init: load rules and copy mode
 chrome.storage.sync.get(["rules", "copyMode"], (data) => {
   rules = data.rules && data.rules.length > 0 ? data.rules : DEFAULT_RULES;
   renderRules();
   document.getElementById("copyMode").value = data.copyMode || "both";
 });
 
-// Get current state
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  if (tabs[0]) {
-    chrome.tabs.sendMessage(tabs[0].id, { action: "getState" }, (response) => {
-      if (response) updateToggleUI(response.active);
-    });
-  }
+// Init: get current highlight state from content script
+sendToTab({ action: "getState" }, (response) => {
+  if (response) updateToggleUI(response.active);
 });
