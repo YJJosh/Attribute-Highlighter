@@ -41,3 +41,6 @@ Use the **Copy button** dropdown to control what gets copied when you click the 
 - **Disabled** — no copy button shown
 - **Attribute + Value** — copies `data-cy="login-btn"`
 - **Value only** — copies `login-btn`
+
+## Note
+> This extension was mostly generated with the assistance of Claude Code by Anthropic.
