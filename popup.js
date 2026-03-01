@@ -17,8 +17,22 @@ function renderRules() {
   container.innerHTML = "";
 
   rules.forEach((rule, i) => {
+    const isEnabled = rule.enabled !== false;
+
     const div = document.createElement("div");
-    div.className = "rule";
+    div.className = "rule" + (isEnabled ? "" : " disabled");
+
+    // Enabled toggle
+    const toggle = document.createElement("input");
+    toggle.type = "checkbox";
+    toggle.className = "enabled-toggle";
+    toggle.checked = isEnabled;
+    toggle.addEventListener("change", () => {
+      rules[i].enabled = toggle.checked;
+      saveAndRefresh();
+      renderRules();
+    });
+    div.appendChild(toggle);
 
     // Type selector
     const typeSelect = document.createElement("select");
@@ -127,7 +141,7 @@ function updateToggleUI(active) {
 
 // Add rule button
 document.getElementById("addRule").addEventListener("click", () => {
-  rules.push({ type: "has", attribute: "", color: "#44aaff", value: "", label: true });
+  rules.push({ type: "has", attribute: "", color: "#44aaff", value: "", label: true, enabled: true });
   saveAndRefresh();
   renderRules();
 });

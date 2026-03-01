@@ -36,6 +36,7 @@ function applyHighlights(rules) {
   clearHighlights();
 
   rules.forEach((rule) => {
+    if (rule.enabled === false) return;
     if (!isValidAttribute(rule.attribute)) return;
 
     let selector;
